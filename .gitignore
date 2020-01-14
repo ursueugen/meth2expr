@@ -3,6 +3,13 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+
+data/
+.vscode/
+m2e/build
+m2e/dist
+m2e/m2e.egg-info
+
 # User-specific files
 *.rsuser
 *.suo

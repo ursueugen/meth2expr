@@ -1,0 +1,27 @@
+{
+    
+    "dirs": {
+        "data": "../data/",
+        "genomics": "../data/genomics/",
+        "log": "logs/"
+    },
+    
+    "urls": {
+        "genome": "ftp://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/annotation/GRCh37_latest/refseq_identifiers/GRCh37_latest_genomic.fna.gz",
+        "gff": "ftp://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/annotation/GRCh37_latest/refseq_identifiers/GRCh37_latest_genomic.gff.gz",
+        "cpg": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?mode=raw&is_datatable=true&acc=GPL13534&id=11288&db=GeoDb_blob92"
+    },
+
+    "names": {
+        "genome_seq": "GRCh37_latest_genomic.fna",
+        "genome_complete_gff": "GRCh37_latest_genomic.gff",
+        "genome_genes_gff": "GRCh37_latest_genomic_genes.gff",
+        "proms_seq": "proms.fna",
+        "proms_gff": "proms.gff",
+        "cpgs": "GPL13534-11288.txt"
+    },
+
+    "params": {
+        "upstream_len": 1000
+    }
+}
