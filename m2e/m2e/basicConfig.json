@@ -2,8 +2,8 @@
     
     "dirs": {
         "data": "../data/",
-        "genomics": "../data/genomics/",
-        "log": "logs/"
+        "genomics": "data/genomics/",
+        "log": "scripts/logs/"
     },
     
     "urls": {
@@ -13,7 +13,7 @@
     },
 
     "names": {
-        "genome_seq": "GRCh37_latest_genomic.fna",
+        "genome_seq": "GRCh37_latest_genomic_edited.fna",
         "genome_complete_gff": "GRCh37_latest_genomic.gff",
         "genome_genes_gff": "GRCh37_latest_genomic_genes.gff",
         "proms_seq": "proms.fna",
@@ -22,6 +22,9 @@
     },
 
     "params": {
-        "upstream_len": 1000
+        "upstream_len": 1000,
+        "chromosomes": [
+            "NC_000001.10", "NC_000002.11", "NC_000003.11", "NC_000004.11", "NC_000005.9", "NC_000006.11", "NC_000007.13", "NC_000008.10", "NC_000009.11", "NC_000010.10", "NC_000011.9", "NC_000012.11", "NC_000013.10", "NC_000014.8", "NC_000015.9", "NC_000016.9", "NC_000017.10", "NC_000018.9", "NC_000019.9", "NC_000020.10", "NC_000021.8", "NC_000022.10", "NC_000023.10", "NC_000024.9"
+        ]
     }
 }

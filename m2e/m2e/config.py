@@ -2,9 +2,9 @@
 """
 
 
+import os
 import json
 
-
-CHROMOSOMES = list(map(lambda x: str(x), range(1, 23))) + ["X", "Y", "MT"]
-with open("basicConfig.json", "r") as f:
+fn = '/home/dicer/Documents/Gerontomics/code/meth2expr/m2e/m2e/basicConfig.json'
+with open(fn, "r") as f:
     configs = json.load(f)

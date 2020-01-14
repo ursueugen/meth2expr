@@ -6,7 +6,7 @@ from pybedtools.featurefuncs import five_prime
 from pybedtools.cbedtools import create_interval_from_list
 
 from m2e.func_utils import get_cpgs, get_genome, get_gff
-from m2e.config import configs, CHROMOSOMES
+from m2e.config import configs
 
 
 ### inputs
@@ -16,16 +16,18 @@ CPG_URL = configs["urls"]["cpg"]
 GENOMICS_DIR = configs["dirs"]["genomics"]
 GENOME_GFF_PATH = os.path.join(GENOMICS_DIR, configs["names"]["genome_complete_gff"])
 GENOME_SEQ_PATH = os.path.join(GENOMICS_DIR, configs["names"]["genome_seq"])
+CPG_PATH = os.path.join(GENOMICS_DIR, configs['names']['cpgs'])
 
 UPSTREAM_LENGTH = configs['params']['upstream_len']
+CHROMOSOMES = configs['params']['chromosomes']
 
 ### outputs
 GENES_GFF_PATH = os.path.join(GENOMICS_DIR, configs['names']['genome_genes_gff'])
-PROMS_GFF_PATH = os.path.join(GENOMICS_DIR, configs['names']['proms_seq'])
+PROMS_GFF_PATH = os.path.join(GENOMICS_DIR, configs['names']['proms_gff'])
 PROMS_SEQ_PATH = os.path.join(GENOMICS_DIR, configs['names']['proms_seq'])
 
 # log
-logging.basicConfig(filename=os.path.join(configs['dirs']['log'], 'genomics_data_collection_logs.txt'), 
+logging.basicConfig(filename=os.path.join(configs['dirs']['log'], 'genomics_data_collection.log'), 
                     level=logging.INFO, 
                     format='%(asctime)s %(message)s', 
                     datefmt='%m/%d/%Y %I:%M:%S %p')
@@ -36,7 +38,9 @@ def add_geneIDs(bed):
     new_intervals = []
     for interval in bed:
         new_fields = interval.fields[:]
-        new_fields[2] = interval.name.split(":")[1] + "_promoter"
+        #new_fields[2] = interval.name.split(":")[1] + "_promoter"
+        gene_id = interval.attrs['Dbxref'].split(",")[0].split(":")[-1]
+        new_fields[2] = gene_id
         new_interval = create_interval_from_list(new_fields)
         new_intervals.append(new_interval)
     return BedTool(new_intervals)
@@ -47,13 +51,16 @@ if __name__ == "__main__":
 
     # check availability of genome sequence and genome annotations(gff)
     if not os.path.isfile(GENOME_SEQ_PATH):
-        get_genome(GENOME_URL)
+        logging.info("Downloading genome sequence at " + GENOME_SEQ_PATH)
+        get_genome(GENOME_URL, GENOMICS_DIR)
 
     if not os.path.isfile(GENOME_GFF_PATH):
-        get_gff(GFF_URL)
+        logging.info("Downloading genome gff at " + GENOME_GFF_PATH)
+        get_gff(GFF_URL, GENOMICS_DIR)
 
     if not os.path.isfile(CPG_PATH):
-        get_cpgs(CPG_URL)
+        logging.info("Downloading CpG metadata at " + CPG_PATH)
+        get_cpgs(CPG_URL, GENOMICS_DIR)
 
     # derive promoter gff and extract sequences from genome
     if os.path.isfile(PROMS_GFF_PATH):
