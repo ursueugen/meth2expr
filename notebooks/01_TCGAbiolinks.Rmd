@@ -1,0 +1,183 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Notebook to download GDC data on methylation and gene expression.
+
+```{r}
+
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+if (!require("TCGAbiolinks")) {
+  BiocManager::install("TCGAbiolinks")
+  }
+
+library(TCGAbiolinks)
+```
+
+Let's download TCGA data with TCGAbiolinks package.
+Using sample code from https://www.bioconductor.org/packages/release/bioc/vignettes/TCGAbiolinks/inst/doc/query.html
+To check further code: https://www.bioconductor.org/packages/release/bioc/html/TCGAbiolinks.html
+
+In this example we will access the harmonized database (legacy = FALSE) and search for all patients with DNA methylation (platform HumanMethylation450k) and gene expression data for Stomach Adenocarcinoma (TCGA-STAD).
+
+```{r}
+
+# This is only an example
+#query.met <- GDCquery(project = "TCGA-STAD",
+#                      data.category = "DNA Methylation",
+#                      legacy = FALSE,
+#                      platform = c("Illumina Human Methylation 450"))
+#query.exp <- GDCquery(project = "TCGA-STAD",
+#                      legacy = FALSE,
+#                      data.category = "Transcriptome Profiling",
+#                      data.type = "Gene Expression Quantification", 
+#                      workflow.type = "HTSeq - FPKM-UQ")
+
+# Get all patients that have DNA methylation and gene expression.
+#common.patients <- intersect(substr(getResults(query.met, cols = "cases"), 1, 12),
+#                             substr(getResults(query.exp, cols = "cases"), 1, 12))
+
+# Only seelct the first 5 patients
+#query.met <- GDCquery(project = "TCGA-STAD",
+#                      data.category = "DNA Methylation",
+#                      legacy = FALSE,
+#                      platform = c("Illumina Human Methylation 450"),
+#                      barcode = common.patients)
+#query.exp <- GDCquery(project = "TCGA-STAD",
+#                      legacy = FALSE,
+#                      data.category = "Transcriptome Profiling",
+#                      data.type = "Gene Expression Quantification", 
+#                      workflow.type = "HTSeq - FPKM-UQ",
+#                      barcode = common.patients)
+
+#datatable(getResults(query.met, cols = c("data_type","cases")),
+#          filter = 'top',
+#          options = list(scrollX = TRUE, keys = TRUE, pageLength = 5), 
+#          rownames = FALSE)
+```
+
+```{r}
+# Example -cont-
+
+# Log query info
+#write.table(query.met[,2:11], file='../data/raw/TCGAbiolinks/query_methylation.csv', quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
+#write.table(query.exp[,2:11], file='../data/raw/TCGAbiolinks/query_expression.csv', quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
+
+#query.met.data = query.met[,1][[1]]
+#query.exp.data = query.exp[,1][[1]]
+
+#write.table(query.met.data, file='../data/raw/TCGAbiolinks/STAD_methylation.csv', quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
+#write.table(query.exp.data, file='../data/raw/TCGAbiolinks/STAD_expression.csv', quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
+```
+
+```{r}
+# Query samples with expression + methylation across all TCGA projects
+
+print(paste("Current directory: ", getwd(), sep=''))
+DATA_DIR = "../data/tcga/"
+PROJECTS_DIR = paste(DATA_DIR, 'projects/', sep='')
+
+
+projects = TCGAbiolinks:::getGDCprojects()$project_id
+
+getProjectData = function(projects) {
+  
+  # Gets dataframe of samples metadata from queried projects and datatypes.
+  # :params
+  #   projects --
+  #   datatypes --
+  # :return
+  #   df
+  
+  dtypes = c("Transcriptome Profiling", "DNA Methylation")
+  counts = 0
+  i = 0
+  
+  for (project in projects) {
+    
+    meta.data = TCGAbiolinks:::getProjectSummary(project)
+    # If all dtypes not in project, skip
+    if (sum(dtypes %in% meta.data$data_categories$data_category)!=2){
+      
+      # Add 0 counts
+      print(project)
+      next
+    
+    }
+    
+    
+    # Create project folder if doesn't exist
+    project_dir = paste(PROJECTS_DIR, project, '/', sep='')
+    dir.create(project_dir, showWarnings = FALSE)
+    
+    
+    query.met = GDCquery(project = project,
+                        data.category = "DNA Methylation",
+                        legacy = FALSE,
+                        platform = c("Illumina Human Methylation 450"))
+      
+    query.exp <- GDCquery(project = project,
+                         # legacy = FALSE,
+                          data.category = "Transcriptome Profiling",
+                          data.type = "Gene Expression Quantification", 
+                          workflow.type = "HTSeq - FPKM-UQ")
+    
+    # Get common patients
+    common.patients <- intersect(substr(getResults(query.met, cols = "cases"), 1, 12),
+                                 substr(getResults(query.exp, cols = "cases"), 1, 12))
+    counts = counts + length(common.patients)
+    
+    # Query data for the common patients
+    query.met <- GDCquery(project = project,
+                          #access = 'open',
+                          data.category = "DNA Methylation",
+                          legacy = FALSE,
+                          platform = c("Illumina Human Methylation 450"),
+                          barcode = common.patients)
+    query.exp <- GDCquery(project = project,
+                          #access = 'open',
+                          data.category = "Transcriptome Profiling",
+                          #legacy = FALSE,
+                          data.type = "Gene Expression Quantification", 
+                          workflow.type = "HTSeq - FPKM-UQ",
+                          barcode = common.patients)
+    
+    # Get and save manifests
+    manifest.met = getManifest(query.met, save=FALSE)
+    manifest.exp = getManifest(query.exp, save=FALSE)
+    
+    write.table(manifest.met, paste(project_dir, project, '_manifest_meth.txt', sep=''), quote=FALSE, sep='\t', row.names=FALSE, col.names=TRUE)
+    write.table(manifest.exp, paste(project_dir, project, '_manifest_expr.txt', sep=''), quote=FALSE, sep='\t', row.names=FALSE, col.names=TRUE)
+    
+    write.table(query.met[,2:11], file=paste(project_dir, project, '_query_meth.tsv',sep=''), quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
+    write.table(query.exp[,2:11], file=paste(project_dir, project, '_query_expr.csv', sep=''), quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
+
+    write.table(query.met[,1][[1]], file=paste(project_dir, project, '_methylation.csv', sep=''), quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
+    write.table(query.exp[,1][[1]], file=paste(project_dir, project, '_expression.csv', sep=''), quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
+    
+    # Download data
+    
+    #if ( !dir.exists(paste(project_dir, 'data/methylation/', sep='')) ) {
+      #GDCdownload(query.met, method='client', directory=paste(project_dir, 'data/methylation/',sep=''), files.per.chunk=NULL)
+    #}
+    if ( !dir.exists(paste(project_dir, 'data/expression/', sep='')) ) {
+      GDCdownload(query.exp, method='client', directory=paste(project_dir, 'data/expression/',sep=''), files.per.chunk=NULL)
+    }
+    
+    if (i==5) {break}
+    i = i + 1
+    
+  }
+  
+  # Using GDCDownload downloads gdc-client tool locally, remove it
+  file.remove(grep('gdc', list.files(), value=TRUE))
+  
+  return(counts)
+}
+
+dat = getProjectData(projects)
+```
+
