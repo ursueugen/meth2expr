@@ -9,6 +9,7 @@ data/
 m2e/build
 m2e/dist
 m2e/m2e.egg-info
+notebooks/.Rhistory
 
 # User-specific files
 *.rsuser

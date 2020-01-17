@@ -9,11 +9,7 @@ Notebook to download GDC data on methylation and gene expression.
 
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
-
-if (!require("TCGAbiolinks")) {
-  BiocManager::install("TCGAbiolinks")
-  }
-
+BiocManager::install("TCGAbiolinks")
 library(TCGAbiolinks)
 ```
 
