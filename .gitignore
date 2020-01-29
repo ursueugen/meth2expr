@@ -10,6 +10,9 @@ m2e/build
 m2e/dist
 m2e/m2e.egg-info
 notebooks/.Rhistory
+notebooks/models
+notebooks/runs
+.ipynb_checkpoints
 
 # User-specific files
 *.rsuser
