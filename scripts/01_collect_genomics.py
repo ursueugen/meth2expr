@@ -39,13 +39,22 @@ logging.basicConfig(filename=logfile,
 
 
 def add_geneIDs(bed):
-    """ Add gene IDs to name field of gff for rendering fasta/tab sequence files with gene ids in headers."""
+    """ Add gene features to name field of gff for rendering fasta/tab sequence files with gene ids in headers."""
     new_intervals = []
     for interval in bed:
         new_fields = interval.fields[:]
         #new_fields[2] = interval.name.split(":")[1] + "_promoter"
+        
         gene_id = interval.attrs['Dbxref'].split(",")[0].split(":")[-1]
-        new_fields[2] = gene_id
+        gene_chr = interval[0]
+        gene_start = interval[3]
+        gene_end = interval[4]
+        gene_strand = interval[6]
+        
+        new_fields[2] = ":".join(["GeneID-chr-start-end-strand",
+                                  gene_id, gene_chr, gene_start,
+                                  gene_end, gene_strand])
+        
         new_interval = create_interval_from_list(new_fields)
         new_intervals.append(new_interval)
     return BedTool(new_intervals)
@@ -88,4 +97,5 @@ if __name__ == "__main__":
     
     # extract sequences defined by promoter features
     proms_seqs = proms_bed.sequence(fi=GENOME_SEQ_PATH, fo=PROMS_SEQ_PATH, s=True, fullHeader=True, name=True)
+    
     logging.info("Extracted prom seqs. Saved at " + PROMS_SEQ_PATH)
