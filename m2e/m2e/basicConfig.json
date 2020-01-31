@@ -2,8 +2,8 @@
     
     "dirs": {
         "data": "../data/",
-        "genomics": "data/genomics/",
-        "log": "scripts/logs/"
+        "genomics": "../data/genomics/",
+        "log": "logs/"
     },
     
     "urls": {

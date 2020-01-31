@@ -27,7 +27,12 @@ PROMS_GFF_PATH = os.path.join(GENOMICS_DIR, configs['names']['proms_gff'])
 PROMS_SEQ_PATH = os.path.join(GENOMICS_DIR, configs['names']['proms_seq'])
 
 # log
-logging.basicConfig(filename=os.path.join(configs['dirs']['log'], 'genomics_data_collection.log'), 
+
+#for handler in logging.root.handlers[:]:
+#    logging.root.removeHandler(handler)
+logfile = os.path.join(configs['dirs']['log'], 'genomics_data_collection.log')
+logging.basicConfig(filename=logfile,
+                    filemode = 'a',
                     level=logging.INFO, 
                     format='%(asctime)s %(message)s', 
                     datefmt='%m/%d/%Y %I:%M:%S %p')

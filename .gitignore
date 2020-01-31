@@ -13,6 +13,7 @@ notebooks/.Rhistory
 notebooks/models
 notebooks/runs
 .ipynb_checkpoints
+scripts/.fna
 
 # User-specific files
 *.rsuser
