@@ -1,5 +1,6 @@
 import os
 import logging
+import json
 
 from pybedtools import BedTool
 from pybedtools.featurefuncs import five_prime
@@ -41,23 +42,29 @@ logging.basicConfig(filename=logfile,
 def add_geneIDs(bed):
     """ Add gene features to name field of gff for rendering fasta/tab sequence files with gene ids in headers."""
     new_intervals = []
+    genes_data = {}
     for interval in bed:
         new_fields = interval.fields[:]
         #new_fields[2] = interval.name.split(":")[1] + "_promoter"
         
         gene_id = interval.attrs['Dbxref'].split(",")[0].split(":")[-1]
+        new_fields[2] = gene_id
+        
+        # Store gene_data
         gene_chr = interval[0]
         gene_start = interval[3]
         gene_end = interval[4]
         gene_strand = interval[6]
+        genes_data[gene_id] = {'GeneID': gene_id,
+                               'chr': gene_chr,
+                               'start': gene_start,
+                               'end': gene_end,
+                               'strand': gene_strand}
         
-        new_fields[2] = ":".join(["GeneID-chr-start-end-strand",
-                                  gene_id, gene_chr, gene_start,
-                                  gene_end, gene_strand])
         
         new_interval = create_interval_from_list(new_fields)
         new_intervals.append(new_interval)
-    return BedTool(new_intervals)
+    return BedTool(new_intervals), genes_data
 
 
 if __name__ == "__main__":
@@ -77,6 +84,7 @@ if __name__ == "__main__":
         get_cpgs(CPG_URL, GENOMICS_DIR)
 
     # derive promoter gff and extract sequences from genome
+    print(PROMS_GFF_PATH)
     if os.path.isfile(PROMS_GFF_PATH):
         proms_bed = BedTool(PROMS_GFF_PATH)
         logging.info("Found proms gff at " + PROMS_GFF_PATH)
@@ -91,8 +99,12 @@ if __name__ == "__main__":
     
         # extract promoters from genes features
         proms_bed = genes_bed.each(func=five_prime, upstream=UPSTREAM_LENGTH, downstream=0)
-        proms_bed = add_geneIDs(proms_bed)
+        proms_bed, genes_data = add_geneIDs(proms_bed)
+        
+        with open(GENOMICS_DIR + "genes.json", 'w+') as f:
+            json.dump(genes_data, f)
         proms_bed.saveas(PROMS_GFF_PATH)
+        
         logging.info("Extracted # promoters = " + str(len(proms_bed)) + ", saved at " + PROMS_GFF_PATH)
     
     # extract sequences defined by promoter features
