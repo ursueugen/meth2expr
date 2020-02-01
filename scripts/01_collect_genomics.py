@@ -49,8 +49,10 @@ def add_geneIDs(bed):
         
         gene_id = interval.attrs['Dbxref'].split(",")[0].split(":")[-1]
         new_fields[2] = gene_id
+        new_interval = create_interval_from_list(new_fields)
+        new_intervals.append(new_interval)
         
-        # Store gene_data
+        # Record gene_data
         gene_chr = interval[0]
         gene_start = interval[3]
         gene_end = interval[4]
@@ -60,10 +62,7 @@ def add_geneIDs(bed):
                                'start': gene_start,
                                'end': gene_end,
                                'strand': gene_strand}
-        
-        
-        new_interval = create_interval_from_list(new_fields)
-        new_intervals.append(new_interval)
+    
     return BedTool(new_intervals), genes_data
 
 
@@ -84,7 +83,6 @@ if __name__ == "__main__":
         get_cpgs(CPG_URL, GENOMICS_DIR)
 
     # derive promoter gff and extract sequences from genome
-    print(PROMS_GFF_PATH)
     if os.path.isfile(PROMS_GFF_PATH):
         proms_bed = BedTool(PROMS_GFF_PATH)
         logging.info("Found proms gff at " + PROMS_GFF_PATH)
@@ -108,6 +106,6 @@ if __name__ == "__main__":
         logging.info("Extracted # promoters = " + str(len(proms_bed)) + ", saved at " + PROMS_GFF_PATH)
     
     # extract sequences defined by promoter features
-    proms_seqs = proms_bed.sequence(fi=GENOME_SEQ_PATH, fo=PROMS_SEQ_PATH, s=True, fullHeader=True, name=True)
+    proms_seqs = proms_bed.sequence(fi=GENOME_SEQ_PATH, fo=PROMS_SEQ_PATH, s=True, fullHeader=False, name=True)
     
     logging.info("Extracted prom seqs. Saved at " + PROMS_SEQ_PATH)
