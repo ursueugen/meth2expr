@@ -48,6 +48,10 @@ def add_geneIDs(bed):
         #new_fields[2] = interval.name.split(":")[1] + "_promoter"
         
         gene_id = interval.attrs['Dbxref'].split(",")[0].split(":")[-1]
+        
+        if gene_id in genes_data.keys():
+            continue
+            
         new_fields[2] = gene_id
         new_interval = create_interval_from_list(new_fields)
         new_intervals.append(new_interval)
